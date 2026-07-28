@@ -26,24 +26,45 @@ BASE = Path(__file__).resolve().parent
 # ---------------------------------------------------------
 # LOAD ARTIFACTS
 # ---------------------------------------------------------
+def find_file(filename, subfolder=None):
+    """
+    Look for a file in several likely locations so the app works whether
+    files were uploaded flat into the repo root or organized into
+    models/ data/ outputs/ subfolders.
+    """
+    candidates = []
+    if subfolder:
+        candidates.append(BASE / subfolder / filename)
+    candidates.append(BASE / filename)
+    # also search one level deep in any folder, as a last resort
+    candidates.extend(BASE.glob(f"**/{filename}"))
+
+    for path in candidates:
+        if path.exists():
+            return path
+    raise FileNotFoundError(
+        f"Could not find '{filename}' in {BASE} or its subfolders. "
+        f"Please make sure it has been uploaded to the GitHub repo."
+    )
+
 @st.cache_resource
 def load_artifacts():
-    model = joblib.load(BASE / "models" / "best_model.pkl")
-    scaler = joblib.load(BASE / "models" / "scaler.pkl")
-    op_encoder = joblib.load(BASE / "models" / "op_mode_encoder.pkl")
-    target_encoder = joblib.load(BASE / "models" / "target_encoder.pkl")
-    with open(BASE / "models" / "feature_cols.json") as f:
+    model = joblib.load(find_file("best_model.pkl", "models"))
+    scaler = joblib.load(find_file("scaler.pkl", "models"))
+    op_encoder = joblib.load(find_file("op_mode_encoder.pkl", "models"))
+    target_encoder = joblib.load(find_file("target_encoder.pkl", "models"))
+    with open(find_file("feature_cols.json", "models")) as f:
         feature_cols = json.load(f)
     return model, scaler, op_encoder, target_encoder, feature_cols
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(BASE / "data" / "processed_data.csv", parse_dates=["DateTime"])
+    df = pd.read_csv(find_file("processed_data.csv", "data"), parse_dates=["DateTime"])
     return df
 
 @st.cache_data
 def load_feature_importance():
-    return pd.read_csv(BASE / "outputs" / "feature_importance.csv")
+    return pd.read_csv(find_file("feature_importance.csv", "outputs"))
 
 try:
     model, scaler, op_encoder, target_encoder, feature_cols = load_artifacts()
