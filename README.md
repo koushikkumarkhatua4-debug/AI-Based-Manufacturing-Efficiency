@@ -1,37 +1,53 @@
-# AI-Based Manufacturing Efficiency Classification
+# AI-Based Manufacturing Efficiency Classification — Streamlit App
 
-## Contents
-- `Manufacturing_Efficiency_Report.docx` — Full research report (EDA, methodology, results, recommendations)
-- `train_model.py` — Model training script (run this first to regenerate models/)
-- `app/app.py` — Streamlit dashboard application
-- `models/` — Trained model, scaler, and encoders (already trained, ready to use)
-- `Thales_Group_Manufacturing.csv` — Original dataset
-- `processed_data.csv` — Dataset with engineered features + predictions (used by the app)
-- `requirements.txt` — Python dependencies
+## ⚠️ IMPORTANT — Deploy this ENTIRE folder, not just app.py
 
-## How to run the Streamlit app
-
-1. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. From this project's root folder, run:
-   ```
-   streamlit run app/app.py
-   ```
-
-3. The app will open in your browser at http://localhost:8501
-
-## How to retrain the model (optional)
+The `ModuleNotFoundError` / file-not-found errors on Streamlit Cloud happen when only
+`app.py` is uploaded on its own. The app needs the `models/`, `data/`, and `outputs/`
+folders sitting right next to it. Upload/push **everything in this folder** to your
+GitHub repo, keeping this exact structure:
 
 ```
-python train_model.py
+your-repo/
+├── app.py
+├── requirements.txt
+├── models/
+│   ├── best_model.pkl
+│   ├── scaler.pkl
+│   ├── op_mode_encoder.pkl
+│   ├── target_encoder.pkl
+│   └── feature_cols.json
+├── data/
+│   ├── processed_data.csv
+│   └── Thales_Group_Manufacturing.csv
+└── outputs/
+    └── feature_importance.csv
 ```
 
-This regenerates the model files inside `models/` and refreshes `processed_data.csv`.
+## Deploy on Streamlit Community Cloud
 
-## Model Performance
+1. Create a new GitHub repository.
+2. Copy **all files and folders from this package** into the repo (don't rename or move anything).
+3. Commit and push to GitHub.
+4. Go to https://share.streamlit.io → "New app" → select your repo → set **Main file path** to `app.py`.
+5. Click **Deploy**. Streamlit Cloud will read `requirements.txt` automatically and install everything.
 
-Best model: Random Forest
-See the report for full accuracy, F1-score, and feature importance details.
+If you already created the app and it's stuck on the old error: open the app →
+bottom-right **"Manage app"** → **"Reboot app"** after pushing the corrected files.
+
+## Run locally
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Then open http://localhost:8501
+
+## Notes
+- All file paths in `app.py` are resolved relative to the script's own location
+  (`Path(__file__).resolve().parent`), so it works the same whether run locally,
+  on Streamlit Cloud, or from any other folder — as long as the folder structure
+  above is preserved.
+- Model used: Random Forest (best of Logistic Regression / Random Forest / XGBoost
+  comparison — see the accompanying research report for full metrics).
